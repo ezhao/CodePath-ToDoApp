@@ -108,10 +108,7 @@ public class MainActivity extends ActionBarActivity {
         try {
             items = new ArrayList<String>(FileUtils.readLines(todoFile));
         } catch (IOException e) {
-            e.printStackTrace();
-
-            // Doesn't find the file on first run. Do this instead.
-            //items = new ArrayList<String>();
+            items = new ArrayList<String>();
         }
     }
 
