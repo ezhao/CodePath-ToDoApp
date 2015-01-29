@@ -1,14 +1,18 @@
 # To Do App
 
-Following [CodePath's guide](http://courses.codepath.com/snippets/intro_to_android/prework) to learn Android!
+Following [CodePath's guide](http://courses.codepath.com/snippets/intro_to_android/prework) to learn Android! A simple to do app.
 
 Preview of application
 
 ![Animation of app](https://www.dropbox.com/s/tdv8m7uly3hnsff/ToDoAppPrework.gif?dl=1)
 
-Stories
+GIF created with [LiceCap](http://www.cockos.com/licecap/).
 
-1. Add items to list
-2. Remove items from list with a long press
-3. Click item to edit on a new screen (and save back to list)
-4. Persists items through relaunch of app
+## Stories
+
+* [x] Add items to list
+* [x] Remove items from list with a long press
+* [x] Tap item to launch a new screen for editing (and save changes back from here)
+* [x] Persist items through relaunch of app
+
+Time spent: 3 hours
