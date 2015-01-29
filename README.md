@@ -1,10 +1,10 @@
 # To Do App
 
-Following [CodePath's guide](http://courses.codepath.com/snippets/intro_to_android/prework#heading-4-submitting-the-project) to learn Android!
+Following [CodePath's guide](http://courses.codepath.com/snippets/intro_to_android/prework) to learn Android!
 
 Preview of application
 
-![Animation of app](https://www.dropbox.com/s/tdv8m7uly3hnsff/ToDoAppPrework.gif?dl=0)
+![Animation of app](https://www.dropbox.com/s/tdv8m7uly3hnsff/ToDoAppPrework.gif?dl=1)
 
 Stories
 
