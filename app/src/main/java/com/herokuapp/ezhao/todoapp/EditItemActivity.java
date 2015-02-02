@@ -12,21 +12,31 @@ import android.widget.EditText;
 
 
 public class EditItemActivity extends ActionBarActivity {
-    public static final String RESULT_TEXT_KEY = "edited_item_text";
-    public static final String RESULT_POS_KEY = "edited_item_pos";
+    public static final String RESULT_POS_ID_KEY = "edited_item_pos_id";
     private EditText etCurrentItem;
-    private String originalText;
-    private int originalPosition;
+    private EditText etPriority;
+    private EditText etDueDate;
+    private long positionId;
+    private ToDoItem currentItem;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_edit_item);
 
+        // Load views
         etCurrentItem = (EditText) findViewById(R.id.etCurrentItem);
-        originalText = getIntent().getStringExtra(MainActivity.CURRENT_ITEM_KEY);
-        originalPosition = getIntent().getIntExtra(MainActivity.CURRENT_POSITION_KEY, 0);
-        etCurrentItem.append(originalText);
+        etPriority = (EditText) findViewById(R.id.etPriority);
+        etDueDate = (EditText) findViewById(R.id.etDueDate);
+
+        // Get currentItem
+        positionId = getIntent().getLongExtra(MainActivity.CURRENT_POSITION_ID_KEY, 0);
+        currentItem = ToDoItem.load(ToDoItem.class, positionId);
+
+        // Put default values in views
+        etCurrentItem.append(currentItem.description);
+        etPriority.setText(String.valueOf(currentItem.priority));
+        etDueDate.setText(ToDoItem.getDateString(currentItem.dueDate, false));
 
         // Show keyboard
         getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_VISIBLE);
@@ -56,8 +66,10 @@ public class EditItemActivity extends ActionBarActivity {
 
     public void onSaveButton(View v) {
         Intent i = new Intent();
-        i.putExtra(RESULT_TEXT_KEY, etCurrentItem.getText().toString());
-        i.putExtra(RESULT_POS_KEY, originalPosition);
+        currentItem.description = etCurrentItem.getText().toString();
+        currentItem.dueDate = ToDoItem.parseDateString(etDueDate.getText().toString());
+        currentItem.priority = Integer.valueOf(etPriority.getText().toString()).intValue();
+        currentItem.save();
         setResult(RESULT_OK, i);
         finish();
     }

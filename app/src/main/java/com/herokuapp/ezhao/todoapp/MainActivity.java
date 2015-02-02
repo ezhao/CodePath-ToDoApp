@@ -1,6 +1,7 @@
 package com.herokuapp.ezhao.todoapp;
 
 import android.content.Intent;
+import android.database.Cursor;
 import android.support.v7.app.ActionBarActivity;
 import android.os.Bundle;
 import android.util.Log;
@@ -21,11 +22,10 @@ import java.util.ArrayList;
 
 
 public class MainActivity extends ActionBarActivity {
-    public static final String CURRENT_ITEM_KEY = "current_item";
-    public static final String CURRENT_POSITION_KEY = "current_position";
+    public static final String CURRENT_POSITION_ID_KEY = "current_position_id";
     private final int REQUEST_CODE = 20;
     ArrayList<String> items;
-    ArrayAdapter<String> itemsAdapter;
+    ToDoCursorAdapter todoAdapter;
     ListView lvItems;
     EditText etNewItem;
 
@@ -34,18 +34,21 @@ public class MainActivity extends ActionBarActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        // Get views
         lvItems = (ListView) findViewById(R.id.lvItems);
         etNewItem = (EditText) findViewById(R.id.etNewItem);
 
-        readItems();
-        itemsAdapter = new ArrayAdapter<String>(this,
-                android.R.layout.simple_list_item_1, items);
-        lvItems.setAdapter(itemsAdapter);
+        // Connect our ListView to a ToDoAdapter
+        Cursor todoCursor = ToDoItem.fetchAllCursor();
+        todoAdapter = new ToDoCursorAdapter(this, todoCursor);
+        lvItems.setAdapter(todoAdapter);
+
+        // Setup listeners
         setupListViewListener();
 
+        // Misc
         unfocusEtNewItem();
     }
-
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
@@ -74,9 +77,10 @@ public class MainActivity extends ActionBarActivity {
                 new AdapterView.OnItemLongClickListener() {
                     @Override
                     public boolean onItemLongClick(AdapterView<?> parent, View view, int position, long id) {
-                        items.remove(position);
-                        itemsAdapter.notifyDataSetChanged();
-                        writeItems();
+                        // Persist the delete to our database and update our ListView
+                        ToDoItem currentItem = ToDoItem.load(ToDoItem.class, id);
+                        currentItem.delete();
+                        todoAdapter.changeCursor(ToDoItem.fetchAllCursor());
                         return true;
                     }
                 }
@@ -85,9 +89,9 @@ public class MainActivity extends ActionBarActivity {
                 new AdapterView.OnItemClickListener() {
                     @Override
                     public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                        // Send the id of the ToDoItem to update
                         Intent i = new Intent(MainActivity.this, EditItemActivity.class);
-                        i.putExtra(CURRENT_ITEM_KEY, items.get(position));
-                        i.putExtra(CURRENT_POSITION_KEY, position);
+                        i.putExtra(CURRENT_POSITION_ID_KEY, id);
                         startActivityForResult(i, REQUEST_CODE);
                     }
                 }
@@ -95,47 +99,29 @@ public class MainActivity extends ActionBarActivity {
     }
 
     public void onAddItem(View v) {
+        // Get the description for our new ToDoItem
         String itemText = etNewItem.getText().toString();
-        itemsAdapter.add(itemText);
         etNewItem.setText("");
-        writeItems();
+
+        // Persist the add to our database and update our ListView
+        ToDoItem newItem = new ToDoItem(itemText);
+        newItem.save();
+        todoAdapter.changeCursor(ToDoItem.fetchAllCursor());
+
         unfocusEtNewItem(); // TODO(emily) this doesn't entirely work
-    }
-
-    private void readItems() {
-        File filesDir = getFilesDir();
-        File todoFile = new File(filesDir, "todo.txt");
-        try {
-            items = new ArrayList<String>(FileUtils.readLines(todoFile));
-        } catch (IOException e) {
-            items = new ArrayList<String>();
-        }
-    }
-
-    private void writeItems() {
-        File filesDir = getFilesDir();
-        File todoFile = new File(filesDir, "todo.txt");
-        try {
-            FileUtils.writeLines(todoFile, items);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
-
-    private void unfocusEtNewItem() {
-        // Unfocus the etNewItem
-        etNewItem.setSelected(false);
-        getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_HIDDEN);
     }
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent i) {
         if (resultCode == RESULT_OK && requestCode == REQUEST_CODE) {
-            String newText = i.getStringExtra(EditItemActivity.RESULT_TEXT_KEY);
-            int newPosition = i.getIntExtra(EditItemActivity.RESULT_POS_KEY, 0);
-            items.set(newPosition, newText);
-            itemsAdapter.notifyDataSetChanged();
-            writeItems();
+            todoAdapter.changeCursor(ToDoItem.fetchAllCursor());
         }
+    }
+
+    // Misc
+    private void unfocusEtNewItem() {
+        // Unfocus the etNewItem
+        etNewItem.setSelected(false);
+        getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_HIDDEN);
     }
 }
